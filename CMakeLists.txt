@@ -12,6 +12,7 @@ find_package(catkin REQUIRED COMPONENTS
   rospy
   moveit_ros_planning_interface
   geometry_msgs
+  std_msgs
 )
 
 ## System dependencies are found with CMake's conventions
@@ -162,6 +163,8 @@ include_directories(
 ## in contrast to setup.py, you can choose the destination
 catkin_install_python(PROGRAMS
   src/pnp_book.py
+  src/sections_occupied.py
+  src/check_positions.py
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
 
