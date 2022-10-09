@@ -5,11 +5,8 @@
   <arg if="$(eval eval_underscore_bypass == '')" name="prefix" default=''/> 
   <arg unless="$(eval eval_underscore_bypass == '')" name="prefix" default="$(arg __ns)/"/>
 
-  <!--include file="$(find xarm7_gripper_moveit_config)/launch/realMove_exec.launch" >
-    <arg name="robot_ip" value="192.168.1.220"/>  
-  </include-->
- 
   <node name="sections_occupied" pkg="library" type="sections_occupied.py" output="screen"/>
-  <node name="pnp_book" pkg="library" type="pnp_book.py" output="screen"/>
-  
-</launch>
+  <node name="straight_line_motion" pkg="library" type="straight_line_motion.py" output="screen"/>
+
+
+  </launch>

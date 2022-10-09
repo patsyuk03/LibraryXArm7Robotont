@@ -5,8 +5,7 @@ import geometry_msgs.msg
 from moveit_commander.conversions import pose_to_list
 from std_msgs.msg import Int16MultiArray
 
-sections_in = Int16MultiArray()
-sections_in.data = [0,0,0,0]
+sections_in = [0,0,0,0]
 
 storage_pose_1 = geometry_msgs.msg.Pose()
 storage_pose_1.orientation.x = -0.9998241931924544
@@ -26,9 +25,19 @@ storage_pose_2.position.x = 0.5351547843227856
 storage_pose_2.position.y = -0.23586754598015158
 storage_pose_2.position.z = 0.40315139868781114
 
-def Sections(sections):
-    global sections_in
-    if sections_in != sections:
+object_pose = geometry_msgs.msg.Pose()
+object_pose.orientation.x = -0.9992377390999495
+object_pose.orientation.y = -0.017418570891527443
+object_pose.orientation.z = -0.03378727441333642
+object_pose.orientation.w = 0.008885619519008434
+object_pose.position.x = 0.4906888143562935
+object_pose.position.y = 0.13525305396465243
+object_pose.position.z = 0.29711573230546273
+
+def Sections(data):
+    global sections_in, sections
+    if sections_in != data.data:
+        sections = data.data
         print(sections)
         sections_in = sections
 
@@ -56,27 +65,31 @@ class PNPbook(object):
         self.xarm7 = moveit_commander.MoveGroupCommander("xarm7")
         self.gripper = moveit_commander.MoveGroupCommander("xarm_gripper")
     
-    def xArm7ToObject(self):
+    def xArm7ToObject(self, positions, section):
         xarm7 = self.xarm7
         pose_goal = geometry_msgs.msg.Pose()
         current_pose = xarm7.get_current_pose().pose
         pose_goal = current_pose
 
-        pose_goal.orientation.x = -0.9992377390999495
-        pose_goal.orientation.y = -0.017418570891527443
-        pose_goal.orientation.z = -0.03378727441333642
-        pose_goal.orientation.w = 0.008885619519008434
+        pose_goal.orientation.x = positions.orientation.x
+        pose_goal.orientation.y = positions.orientation.y
+        pose_goal.orientation.z = positions.orientation.z
+        pose_goal.orientation.w = positions.orientation.w
 
-        pose_goal.position.x = 0.4906888143562935
-        pose_goal.position.y = 0.13525305396465243
-        pose_goal.position.z = 0.29711573230546273
+        pose_goal.position.x = positions.position.x
+        pose_goal.position.y = positions.position.y
+        pose_goal.position.z = positions.position.z
 
         xarm7.set_pose_target(pose_goal)
 
         plan_success, traj, planning_time, error_code = xarm7.plan()
         xarm7.clear_pose_targets()
+        self.ExecutePlan(traj)
 
-        return traj, all_close(pose_goal, current_pose, 0.01)
+        joint_goal = xarm7.get_current_joint_values()
+        joint_goal[0] -= 0.1745*section
+        joint_goal[6] -= 0.1745*section
+        xarm7.go(joint_goal, wait=True)
 
     def xArm7ToStorage(self, positions):
         xarm7 = self.xarm7
@@ -98,7 +111,7 @@ class PNPbook(object):
         plan_success, traj, planning_time, error_code = xarm7.plan()
         xarm7.clear_pose_targets()
 
-        return traj, all_close(pose_goal, current_pose, 0.01)
+        self.ExecutePlan(traj)
 
     def lineMotion(self, direction):
         xarm7 = self.xarm7
@@ -120,7 +133,7 @@ class PNPbook(object):
 
         xarm7.clear_pose_targets()
 
-        return self.ExecutePlan(traj)
+        self.ExecutePlan(traj)
 
     def Gripper(self, state):
         gripper = self.gripper
@@ -151,38 +164,30 @@ class PNPbook(object):
 
 
 def main():
-    global storage_pose_1, storage_pose_2
+    global storage_pose_1, storage_pose_2, object_pose
     rospy.Subscriber("sections", Int16MultiArray, Sections)
 
     move = PNPbook()
-    # move.xArm7ToStart()
-    # move.Gripper("open")
-    # move.xArm7ToObject()
-    # move.Gripper("close")
-    # move.xArm7ToStorage()
-    # move.Gripper("open")
-    # move.xArm7ToStart()
+    for section in range(len(sections)):
+        if sections[section] == 1:
+            # inp = input("Press `Enter` to start Xarm7 movement or `stop` to stop: ")
+            # if inp == "stop": break
 
-    while True:
-        print ("============ Press `Enter` to start Xarm7 movement")
-        inp = input()
-        if inp == "stop": break
+            move.xArm7ToStart()
+            move.Gripper("open")
 
-        move.xArm7ToStart()
-        move.Gripper("open")
-        plan, bool_debug = move.xArm7ToObject() 
-        move.ExecutePlan(plan)
-        move.lineMotion("down")
-        move.Gripper("close")
-        move.lineMotion("up")
-        plan, bool_debug = move.xArm7ToStorage(storage_pose_1)
-        move.ExecutePlan(plan)
-        plan, bool_debug = move.xArm7ToStorage(storage_pose_2)
-        move.ExecutePlan(plan)
-        move.lineMotion("forward")
-        move.Gripper("open")
-        move.lineMotion("backward")
-        move.xArm7ToStart()
+            move.xArm7ToObject(object_pose, section)
+            move.lineMotion("down")
+            move.Gripper("close")
+            move.lineMotion("up")
+
+            move.xArm7ToStorage(storage_pose_1)
+            move.xArm7ToStorage(storage_pose_2)
+            move.lineMotion("forward")
+            move.Gripper("open")
+            move.lineMotion("backward")
+
+            move.xArm7ToStart()
 
 if __name__ == '__main__':
     main()
