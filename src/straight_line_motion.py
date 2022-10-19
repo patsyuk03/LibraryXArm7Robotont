@@ -3,13 +3,8 @@ import sys
 import moveit_commander
 import actionlib
 import geometry_msgs.msg
-
-def Sections(data):
-    global sections_in, sections
-    if sections_in != data.data:
-        sections = data.data
-        print(sections)
-        sections_in = sections
+import tf
+from xarm_msgs.srv import *
 
 class StraightLineMotion(object):
     def __init__(self):
@@ -31,15 +26,50 @@ class StraightLineMotion(object):
         xarm7.clear_pose_targets()
         return self.ExecutePlan(traj)
 
-    def lineMotion_2(self):
-        xarm7 = self.xarm7
-        current_pose = xarm7.get_current_pose().pose
-        waypoints = []
-        current_pose.position.z -= 0.2 
-        waypoints.append(current_pose)
-        (traj, fraction) = xarm7.compute_cartesian_path(waypoints, 0.01, 0.0)
-        xarm7.clear_pose_targets()
-        return self.ExecutePlan(traj)
+    # def lineMotion_2(self):
+    #     xarm7 = self.xarm7
+    #     current_pose = xarm7.get_current_pose().pose
+
+    #     X = current_pose.position.x*1000
+    #     Y = current_pose.position.y*1000
+    #     Z = (current_pose.position.z - 0.2)*1000
+
+    #     current_orientation = (
+    #         current_pose.orientation.x,
+    #         current_pose.orientation.y,
+    #         current_pose.orientation.z,
+    #         current_pose.orientation.w)
+
+    #     euler = tf.transformations.euler_from_quaternion(current_orientation)
+
+    #     roll = 3.14 + euler[0]
+    #     pitch = euler[1]
+    #     yaw = euler[2]
+
+    #     client = actionlib.SimpleActionClient('/xarm/move_servo_cart', )
+    #     client.wait_for_server()
+    #     goal = [X, Y, Z, roll, pitch, yaw]
+    #     client.send_goal(goal)
+    #     client.wait_for_result(rospy.Duration.from_sec(5.0))
+
+    def linearMotion_2(self):
+        rospy.wait_for_service('/xarm/move_servo_cart')
+        rospy.set_param('/xarm/wait_for_finish', True)
+        motion_en = rospy.ServiceProxy('/xarm/motion_ctrl', SetAxis)
+        set_mode = rospy.ServiceProxy('/xarm/set_mode', SetInt16)
+        set_state = rospy.ServiceProxy('/xarm/set_state', SetInt16)
+        get_position = rospy.ServiceProxy('/xarm/get_position_rpy', GetFloat32List)
+        set_mode(1)
+        set_state(0)
+        start_pose = list(get_position().datas)
+        servo_cart = rospy.ServiceProxy('/xarm/move_servo_cart', Move)
+        req = MoveRequest() 
+        req.pose = start_pose
+        req.pose[2] -= 0.2
+        req.mvvelo = 0
+        req.mvacc = 0
+        req.mvtime = 0 
+        servo_cart(req)
 
     def ExecutePlan(self, plan):    
         xarm7 = self.xarm7
