@@ -166,6 +166,9 @@ catkin_install_python(PROGRAMS
   src/sections_occupied.py
   src/check_positions.py
   src/straight_line_motion.py
+  src/test_xarm.py
+  src/pnp_book_v2.py
+  src/transform_pose_marker.py
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
 

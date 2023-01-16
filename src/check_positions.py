@@ -8,11 +8,11 @@ from std_msgs.msg import Int16MultiArray
 sections_in = Int16MultiArray()
 sections_in.data = [0,0,0,0]
 
-def Sections(sections):
-    global sections_in
-    if sections_in != sections:
-        print(sections)
-        sections_in = sections
+# def Sections(sections):
+#     global sections_in
+#     if sections_in != sections:
+#         print(sections)
+#         sections_in = sections
 
 class PrintPose(object):
     def __init__(self):
@@ -31,7 +31,7 @@ class PrintPose(object):
 
 def main():
 
-    rospy.Subscriber("sections", Int16MultiArray, Sections)
+    # rospy.Subscriber("sections", Int16MultiArray, Sections)
 
     pose = PrintPose()
     pose.printPose()
