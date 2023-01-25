@@ -1,3 +1,11 @@
+
+##########################################
+
+# Position of box and shelf is hardcoded #
+
+##########################################
+
+
 import rospy
 import sys
 import moveit_commander

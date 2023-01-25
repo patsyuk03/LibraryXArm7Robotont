@@ -1,3 +1,10 @@
+
+###################################
+
+# Work space for testing new code #
+
+###################################
+
 import rospy
 import sys
 import moveit_commander

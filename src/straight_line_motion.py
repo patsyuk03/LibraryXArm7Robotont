@@ -1,3 +1,10 @@
+
+############################################
+
+# Check the xArm PythonSDK service request # 
+
+############################################
+
 import rospy
 import sys
 import moveit_commander

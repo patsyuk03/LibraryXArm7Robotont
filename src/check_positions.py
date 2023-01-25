@@ -1,4 +1,14 @@
 #!/usr/bin/python3
+
+#################################################
+
+# Made to check the coordinated of xArm gripper #
+
+#################################################
+
+
+
+
 import rospy
 import sys
 import moveit_commander

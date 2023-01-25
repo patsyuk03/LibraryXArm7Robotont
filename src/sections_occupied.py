@@ -1,4 +1,11 @@
 #!/usr/bin/python3
+
+####################################################################
+
+# Node that posts the information about occupated cells in the box #
+
+####################################################################
+
 import rospy
 from std_msgs.msg import Int16MultiArray
 
