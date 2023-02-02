@@ -169,6 +169,8 @@ catkin_install_python(PROGRAMS
   src/test_xarm.py
   src/pnp_book_v2.py
   src/transform_pose_marker.py
+  src/test_marker.py
+  src/pnp_book_v3.py
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
 
