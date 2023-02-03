@@ -35,7 +35,7 @@ class PrintPose(object):
         xarm7 = self.xarm7
         current_pose = xarm7.get_current_pose().pose
         print('\nxArm pose:\n', round(current_pose.position.x, 2), round(current_pose.position.y, 2), round(current_pose.position.z, 2))
-        print('\nMarker pose:\n', round(marker_pose.position.z, 2), round(marker_pose.position.y, 2), round(marker_pose.position.x, 2))
+        print('\nMarker pose:\n', round(marker_pose.position.x, 2), round(marker_pose.position.y, 2), round(marker_pose.position.z, 2))
 
         error = geometry_msgs.msg.Pose()
         error.position.x = round(abs(current_pose.position.x - marker_pose.position.z), 2)
@@ -47,12 +47,12 @@ class PrintPose(object):
         move.position.x = round(current_pose.position.x + marker_pose.position.z, 2)
         move.position.y = round(current_pose.position.y + marker_pose.position.y, 2)
         move.position.z = round(current_pose.position.z - marker_pose.position.x, 2)
-        print('\nMove:\n', move.position)
+        # print('\nMove:\n', move.position)
 
 def main():
 
     # rospy.Subscriber("sections", Int16MultiArray, Sections)
-    rospy.Subscriber("/ar_pose_marker", AlvarMarkers, callback)
+    rospy.Subscriber("/ar_tf_marker", AlvarMarkers, callback)
     pose = PrintPose()
     rate = rospy.Rate(5)
 

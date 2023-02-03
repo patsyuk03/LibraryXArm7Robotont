@@ -42,8 +42,8 @@ class PNPbook(object):
         current_pose = xarm7.get_current_pose().pose
         pose_goal = current_pose
 
-        pose_goal.position.x += positions.position.z
-        pose_goal.position.y += positions.position.y
+        pose_goal.position.x = positions.position.x
+        pose_goal.position.y = positions.position.y
         pose_goal.position.z = 0.15
 
         xarm7.set_pose_target(pose_goal)
@@ -143,7 +143,7 @@ def main():
     sections = list()
     sections_in = list()
 
-    rospy.Subscriber("/ar_pose_marker", AlvarMarkers, BookPosition)
+    rospy.Subscriber("/ar_tf_marker", AlvarMarkers, BookPosition)
     rospy.Subscriber("sections", Int16MultiArray, Sections)
 
     move = PNPbook()

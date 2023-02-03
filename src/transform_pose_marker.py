@@ -21,16 +21,16 @@ def callback(data):
             tf_marker = marker
             marker.pose.header = marker.header
             pub.publish(marker.pose)
-            t = listener.getLatestCommonTime("/link_eef", "/camera_link")
+            t = listener.getLatestCommonTime("/link_base", "/camera_link")
             #t = rospy.Time(0)
-            (trans,rot) = listener.lookupTransform('/link_eef', '/camera_link', t)
-            p_in_base = listener.transformPose("link_eef", marker.pose)
+            (trans,rot) = listener.lookupTransform('/link_base', '/camera_link', t)
+            p_in_base = listener.transformPose("link_base", marker.pose)
             pub1.publish(p_in_base)
             tf_marker.pose = p_in_base
-            tf_marker.header.frame_id = "link_eef"
+            tf_marker.header.frame_id = "link_base"
             tf_markers.markers.append(tf_marker)
         tf_markers.header = data.header
-        tf_markers.header.frame_id = "link_eef"
+        tf_markers.header.frame_id = "link_base"
         pub_markers.publish(tf_markers)
 
 def main():
