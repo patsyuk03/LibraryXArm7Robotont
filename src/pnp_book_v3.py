@@ -112,7 +112,7 @@ class PNPbook(object):
     def xArm7ToStart(self):
         xarm7 = self.xarm7
         joint_goal = xarm7.get_current_joint_values()
-        joint_goal[0] = 0.36
+        joint_goal[0] = 0
         joint_goal[1] = -0.68
         joint_goal[2] = 0
         joint_goal[3] = 0.83
@@ -143,7 +143,7 @@ def main():
     sections = list()
     sections_in = list()
 
-    rospy.Subscriber("/ar_tf_marker", AlvarMarkers, BookPosition)
+    rospy.Subscriber("/arm/ar_tf_marker", AlvarMarkers, BookPosition)
     rospy.Subscriber("sections", Int16MultiArray, Sections)
 
     move = PNPbook()
@@ -155,7 +155,7 @@ def main():
     while not rospy.is_shutdown():
         if sections:
             # move.xArm7ToBox()
-            if set((book_positions.keys())) == set(sections):
+            if set(book_positions.keys()) == set(sections):
                 print('Found box')
                 for id in sections:
                     book = book_positions[id]
@@ -174,6 +174,7 @@ def main():
                     move.xArm7ToStart()
                     move.Gripper("open")
             else:
+                print(set(book_positions.keys()))
                 move.xArm7ToStart()
                 move.Gripper("open")
                 print('there is no box')

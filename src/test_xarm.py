@@ -32,9 +32,9 @@ class Motion(object):
         pose_goal = geometry_msgs.msg.Pose()
         pose_goal = current_pose
 
-        pose_goal.position.x += marker_pose.position.z
-        pose_goal.position.y += marker_pose.position.y
-        pose_goal.position.z = 0.05
+        pose_goal.position.x = marker_pose.position.x
+        pose_goal.position.y = marker_pose.position.y
+        pose_goal.position.z = 0.15
 
         xarm7.set_pose_target(pose_goal)
 

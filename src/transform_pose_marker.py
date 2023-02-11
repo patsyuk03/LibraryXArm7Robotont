@@ -41,7 +41,7 @@ def main():
     pub1 = rospy.Publisher('pose_link_base', PoseStamped, queue_size=1)
     pub_markers = rospy.Publisher('ar_tf_marker', AlvarMarkers, queue_size=1)
     rospy.loginfo("Subscribing to ar_pose_marker")
-    rospy.Subscriber("ar_pose_marker", AlvarMarkers, callback)
+    rospy.Subscriber("/arm/ar_pose_marker", AlvarMarkers, callback)
     rospy.spin()
                     
 if __name__ == '__main__':

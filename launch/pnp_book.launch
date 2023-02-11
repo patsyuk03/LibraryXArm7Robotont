@@ -8,18 +8,21 @@
   <include file="$(find xarm7_gripper_moveit_config)/launch/realMove_exec.launch" >
     <arg name="robot_ip" value="192.168.1.196"/>  
   </include>
+  
+  <group ns="arm">
+    <include file="$(find realsense2_camera)/launch/rs_rgbd.launch" />
+    
+    <include file="$(find ar_track_alvar)/launch/pr2_indiv_no_kinect.launch">
+      <arg name="cam_info_topic" value="/arm/camera/color/camera_info" />
+      <arg name="cam_image_topic" value="/arm/camera/color/image_raw" />
+      <arg name="output_frame" value="camera_link" />
+    </include>
+    
+    <node pkg="tf" type="static_transform_publisher" name="camera_xarm7_link" args="0.1 0 0 1.571 -1.571 1.571 link_eef camera_link 100" />
+    <node name="transform_pose_marker" pkg="library" type="transform_pose_marker.py" output="screen"/> 
+    <node name="sections_occupied" pkg="library" type="sections_occupied.py" output="screen"/>
+  </group>
 
-  <include file="$(find realsense2_camera)/launch/rs_rgbd.launch" />
-  
-  <include file="$(find ar_track_alvar)/launch/pr2_indiv_no_kinect.launch">
-    <arg name="cam_info_topic" value="/camera/color/camera_info" />
-    <arg name="cam_image_topic" value="/camera/color/image_raw" />
-    <arg name="output_frame" value="camera_link" />
-  </include>
-  
-  <node pkg="tf" type="static_transform_publisher" name="camera_xarm7_link" args="0.1 0 0 1.571 -1.571 1.571 link_eef camera_link 100" />
-  <node name="transform_pose_marker" pkg="library" type="transform_pose_marker.py" output="screen"/> 
-  <node name="sections_occupied" pkg="library" type="sections_occupied.py" output="screen"/>
-  <!-- <node name="pnp_book" pkg="library" type="pnp_book.py" output="screen"/> -->
+  <node name="pnp_book" pkg="library" type="pnp_book_v3.py" output="screen"/>
   
 </launch>

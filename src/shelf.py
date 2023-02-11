@@ -73,7 +73,7 @@ def main():
     rospy.Subscriber("/ar_pose_marker", AlvarMarkers, ShelfPosition)
 
     move = FindShelf()
-    move.xArm7ToStarthttp://192.168.1.196/()
+    move.xArm7ToStart()
     move.Gripper("open")
 
     while len(shelf_positions) < 4:
