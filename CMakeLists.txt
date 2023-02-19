@@ -162,15 +162,19 @@ include_directories(
 ## Mark executable scripts (Python etc.) for installation
 ## in contrast to setup.py, you can choose the destination
 catkin_install_python(PROGRAMS
-  src/pnp_book.py
-  src/sections_occupied.py
-  src/check_positions.py
-  src/straight_line_motion.py
-  src/test_xarm.py
-  src/pnp_book_v2.py
+  src/trash/pnp_book.py
+  src/trash/check_positions.py
+  src/trash/straight_line_motion.py
+  src/trash/pnp_book_v2.py
+  src/trash/test_marker.py
+
+  src/main.py
+  src/find_shelf.py
+  src/director.py
   src/transform_pose_marker.py
-  src/test_marker.py
-  src/pnp_book_v3.py
+  src/sections_occupied.py
+  src/test_xarm.py
+
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
 

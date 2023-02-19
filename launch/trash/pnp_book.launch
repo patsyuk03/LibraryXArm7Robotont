@@ -23,6 +23,6 @@
     <node name="sections_occupied" pkg="library" type="sections_occupied.py" output="screen"/>
   </group>
 
-  <node name="pnp_book" pkg="library" type="pnp_book_v3.py" output="screen"/>
+  <!-- <node name="pnp_book" pkg="library" type="pnp_book_v3.py" output="screen"/> -->
   
 </launch>

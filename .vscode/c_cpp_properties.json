@@ -1,0 +1,25 @@
+{
+  "configurations": [
+    {
+      "browse": {
+        "databaseFilename": "${default}",
+        "limitSymbolsToIncludedHeaders": false
+      },
+      "includePath": [
+        "/home/gurovaid/thesis/devel/include/**",
+        "/opt/ros/noetic/include/**",
+        "/home/gurovaid/thesis/src/ar_track_alvar/ar_track_alvar/include/**",
+        "/home/gurovaid/thesis/src/library/include/**",
+        "/home/gurovaid/thesis/src/xarm_ros/xarm_api/include/**",
+        "/home/gurovaid/thesis/src/xarm_ros/xarm_controller/include/**",
+        "/usr/include/**"
+      ],
+      "name": "ROS",
+      "intelliSenseMode": "gcc-x64",
+      "compilerPath": "/usr/bin/gcc",
+      "cStandard": "gnu11",
+      "cppStandard": "c++14"
+    }
+  ],
+  "version": 4
+}

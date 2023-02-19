@@ -37,7 +37,10 @@ class PrintPose(object):
     def printPose(self):
         xarm7 = self.xarm7
         current_pose = xarm7.get_current_pose().pose
-        print(current_pose)
+        joint_pose = xarm7.get_current_joint_values()
+        print('current pose:\n',current_pose,
+              'joint pose\n', joint_pose)
+
 
 def main():
 
