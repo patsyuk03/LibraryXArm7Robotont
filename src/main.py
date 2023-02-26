@@ -6,22 +6,18 @@
 
 
 
-import rospy
-import sys
-import moveit_commander
+import rospy, sys, moveit_commander, yaml, tf, geometry_msgs.msg
 from ar_track_alvar_msgs.msg import AlvarMarkers
 from std_msgs.msg import Int16MultiArray
 from std_msgs.msg import String
-import yaml
-import geometry_msgs.msg
-import math
-
+from math import *
+import numpy as np
 
 def DirectorCallback(data):
     global director
     director = data.data
 
-def BookPosition(data):
+def BookPositionCallback(data):
     global book_positions, sections
 
     for marker in data.markers:
@@ -29,7 +25,7 @@ def BookPosition(data):
         if marker.id not in list(book_positions.keys()) and marker.id in sections:
             book_positions[marker.id] = marker.pose.pose
 
-def Sections(data):
+def SectionsCallback(data):
     global sections_in, sections
 
     if sections_in != data.data:
@@ -51,9 +47,37 @@ def GetShelfPosition():
                 shelf_position[id].orientation.z = data[i][id]['orientation']['z']
                 shelf_position[id].orientation.w = data[i][id]['orientation']['w']
 
-def getAngle(a, c):
-    ang = math.atan2(c[1], c[0]) - math.atan2(a[1], a[0])
-    return ang + 2*math.pi if ang < 0 else ang
+def getCoordinates(id):
+    global shelf_position
+
+    markers_y = list()
+    markers_x = list()
+    for marker in list(shelf_position.keys()):
+        markers_y.append(shelf_position[marker].position.y)
+        markers_x.append(shelf_position[marker].position.x)
+
+    # finding equation of the line on which shelf is located
+    coeff = np.polyfit(markers_x, markers_y, 1)
+    print("Coeffs:", coeff)
+    # finding the equation of the line on whish xArm7 will stop before putting the book
+    dist = 0.2/sin(pi/2 - abs(atan(coeff[0])))
+    print("Dist, angle:", dist, atan(coeff[0]))
+    b = coeff[1]-dist if shelf_position[id].position.y>0 else coeff[1]+dist
+    print("b:", b)
+    dist_2 = sqrt(abs(shelf_position[id].position.x**2+(shelf_position[id].position.y-b)**2-0.04))
+    a = coeff[0]**2+1
+    c = -dist_2**2
+    x = [-sqrt(-4*a*c)/(2*a), sqrt(-4*a*c)/(2*a)]
+    y = [coeff[0]*x[0]+b, coeff[0]*x[1]+b]
+    for i in range(2):
+        r = round(sqrt((shelf_position[id].position.x-x[i])**2 + (shelf_position[id].position.y-y[i])**2), 1)
+        if r == 0.2:
+            print(x[i], y[i])
+            angle1 = atan(coeff[0])
+            angle2 = atan2(b, 0) - atan2(y[i], x[i])
+            angle3 = abs(angle2) - abs(angle1) if coeff[0]<0 else abs(angle1) - abs(angle2)
+            print(angle1, angle2, angle3)
+            return [x[i], y[i], angle3]
 
 class PNPbook(object):
     def __init__(self):
@@ -63,83 +87,107 @@ class PNPbook(object):
         self.xarm7 = moveit_commander.MoveGroupCommander("xarm7")
         self.gripper = moveit_commander.MoveGroupCommander("xarm_gripper")
     
-    def xArm7ToObject(self, positions):
-        xarm7 = self.xarm7
-        current_pose = xarm7.get_current_pose().pose
+    def xArm7ToObject(self, id):
+        global book_positions
+
+        current_pose = self.xarm7.get_current_pose().pose
         pose_goal = current_pose
+        pose_goal.position.x = book_positions[id].position.x 
+        pose_goal.position.y = book_positions[id].position.y 
+        pose_goal.position.z = book_positions[id].position.z+0.1
+        self.xarm7.set_pose_target(pose_goal)
+        plan_success, traj, planning_time, error_code = self.xarm7.plan()
+        self.xarm7.execute(traj, wait=True)
+        self.xarm7.clear_pose_targets()
 
-        pose_goal.position.x = positions.position.x 
-        pose_goal.position.y = positions.position.y 
-        pose_goal.position.z = 0.15
-
-        xarm7.set_pose_target(pose_goal)
-
-        plan_success, traj, planning_time, error_code = xarm7.plan()
-        xarm7.clear_pose_targets()
-        self.ExecutePlan(traj)
-
-    def xArm7ToShelf(self, positions):
-        xarm7 = self.xarm7
-        current_pose = xarm7.get_current_pose().pose
-        pose_goal = current_pose
-
-        # pose_goal.orientation.x = positions.orientation.x
-        # pose_goal.orientation.y = positions.orientation.y
-        # pose_goal.orientation.z = positions.orientation.z
-        # pose_goal.orientation.w = positions.orientation.w
-
-        angle = getAngle((positions.position.x, 0), (positions.position.x, positions.position.y))
-
-        pose_goal.position.x = positions.position.x - 0.1*math.cos(angle)
-        pose_goal.position.y = positions.position.y - 0.1*math.sin(angle)
-        pose_goal.position.z = positions.position.z+0.1
-
-        xarm7.set_pose_target(pose_goal)
-
-        plan_success, traj, planning_time, error_code = xarm7.plan()
-        xarm7.clear_pose_targets()
-
-        self.ExecutePlan(traj)
-
-    def lineMotion(self, direction):
-        xarm7 = self.xarm7
-        current_pose = xarm7.get_current_pose().pose
-
-        waypoints = []
-        if direction == "down": 
-            current_pose.position.z -= 0.1 
-        elif direction == "up": 
-            current_pose.position.z += 0.1
-        elif direction == "forward": 
-            current_pose.position.x += 0.1
-            current_pose.position.z -= 0.05
-        elif direction == "backward": 
-            current_pose.position.x -= 0.1
-            current_pose.position.z += 0.05
+        current_pose = self.xarm7.get_current_pose().pose
+        current_pose.position.z -= 0.1
+        waypoints = list()
         waypoints.append(current_pose)
-        (traj, fraction) = xarm7.compute_cartesian_path(waypoints, 0.01, 0.0)
+        (traj, fraction) = self.xarm7.compute_cartesian_path(waypoints, 0.01, 0.0)
+        self.xarm7.execute(traj, wait=True)
+        self.xarm7.clear_pose_targets()
 
-        xarm7.clear_pose_targets()
+        gripper_values = self.gripper.get_current_joint_values()
+        gripper_values[0] = 0.33
+        self.gripper.go(gripper_values, wait=True)
 
-        self.ExecutePlan(traj)
+        current_pose = self.xarm7.get_current_pose().pose
+        current_pose.position.z += 0.1
+        waypoints = list()
+        waypoints.append(current_pose)
+        (traj, fraction) = self.xarm7.compute_cartesian_path(waypoints, 0.01, 0.0)
+        self.xarm7.execute(traj, wait=True)
+        self.xarm7.clear_pose_targets()
 
-    def Gripper(self, state):
-        gripper = self.gripper
-        gripper_values = gripper.get_current_joint_values()
-        if state == "open":
-            gripper_values[0] = 0
-        elif state == "close":
-            gripper_values[0] = 0.33
-        gripper.go(gripper_values, wait=True)
+    def xArm7ToShelf(self, id):
+        global shelf_position
 
-    def ExecutePlan(self, plan):    
-        xarm7 = self.xarm7
-        xarm7.execute(plan, wait=True)
-        xarm7.clear_pose_targets()
+        joint_goal = self.xarm7.get_current_joint_values()
+        joint_goal[0] = atan2(shelf_position[id].position.y, shelf_position[id].position.x)
+        joint_goal[1] = 0
+        joint_goal[2] = 0
+        joint_goal[3] = 0
+        joint_goal[4] = 0
+        joint_goal[5] = -1.571
+        joint_goal[6] = 0
+        self.xarm7.go(joint_goal, wait=True)
+
+        current_pose = self.xarm7.get_current_pose().pose
+        current_pose.position.z = shelf_position[id].position.z + 0.1
+        waypoints = list()
+        waypoints.append(current_pose)
+        (traj, fraction) = self.xarm7.compute_cartesian_path(waypoints, 0.01, 0.0)
+        self.xarm7.execute(traj, wait=True)
+        self.xarm7.clear_pose_targets()
+
+        coords = getCoordinates(id)
+        pose_goal = current_pose
+        pose_goal.position.x = coords[0]
+        pose_goal.position.y = coords[1]
+
+        quaternion1 = (
+        current_pose.orientation.x,
+        current_pose.orientation.y,
+        current_pose.orientation.z,
+        current_pose.orientation.w)
+        quaternion2 = tf.transformations.quaternion_from_euler(coords[2], 0, 0)
+        quaternion = tf.transformations.quaternion_multiply(quaternion1, quaternion2)
+
+        pose_goal.orientation.x = quaternion[0]
+        pose_goal.orientation.y = quaternion[1]
+        pose_goal.orientation.z = quaternion[2]
+        pose_goal.orientation.w = quaternion[3]
+
+        self.xarm7.set_pose_target(pose_goal)
+        plan_success, traj, planning_time, error_code = self.xarm7.plan()
+        self.xarm7.execute(traj, wait=True)
+        self.xarm7.clear_pose_targets()
+
+        current_pose = self.xarm7.get_current_pose().pose
+        current_pose.position.x = shelf_position[id].position.x
+        current_pose.position.y = shelf_position[id].position.y
+        waypoints = list()
+        waypoints.append(current_pose)
+        (traj, fraction) = self.xarm7.compute_cartesian_path(waypoints, 0.01, 0.0)
+        self.xarm7.execute(traj, wait=True)
+        self.xarm7.clear_pose_targets()
+
+        gripper_values = self.gripper.get_current_joint_values()
+        gripper_values[0] = 0
+        self.gripper.go(gripper_values, wait=True)
+
+        current_pose = self.xarm7.get_current_pose().pose
+        current_pose.position.x = coords[0]
+        current_pose.position.y = coords[1]
+        waypoints = list()
+        waypoints.append(current_pose)
+        (traj, fraction) = self.xarm7.compute_cartesian_path(waypoints, 0.01, 0.0)
+        self.xarm7.execute(traj, wait=True)
+        self.xarm7.clear_pose_targets()
 
     def xArm7ToStart(self):
-        xarm7 = self.xarm7
-        joint_goal = xarm7.get_current_joint_values()
+        joint_goal = self.xarm7.get_current_joint_values()
         joint_goal[0] = 0
         joint_goal[1] = -0.68
         joint_goal[2] = 0
@@ -148,11 +196,10 @@ class PNPbook(object):
         joint_goal[5] = 1.5
         joint_goal[6] = 0
 
-        xarm7.go(joint_goal, wait=True)
+        self.xarm7.go(joint_goal, wait=True)
 
     def xArm7ToBox(self):
-        xarm7 = self.xarm7
-        joint_goal = xarm7.get_current_joint_values()
+        joint_goal = self.xarm7.get_current_joint_values()
         joint_goal[0] = -3.05
         joint_goal[1] = -0.83
         joint_goal[2] = 0
@@ -161,7 +208,7 @@ class PNPbook(object):
         joint_goal[5] = 1.5
         joint_goal[6] = 0
 
-        xarm7.go(joint_goal, wait=True)
+        self.xarm7.go(joint_goal, wait=True)
 
 
 def main():
@@ -176,8 +223,8 @@ def main():
     rospy.init_node('main', anonymous=True)
 
     rospy.Subscriber("director", String, DirectorCallback)
-    rospy.Subscriber("/arm/ar_tf_marker", AlvarMarkers, BookPosition)
-    rospy.Subscriber("sections", Int16MultiArray, Sections)
+    rospy.Subscriber("/arm/ar_tf_marker", AlvarMarkers, BookPositionCallback)
+    rospy.Subscriber("sections", Int16MultiArray, SectionsCallback)
     pub = rospy.Publisher('main', String, queue_size=1)
     
 
@@ -190,35 +237,26 @@ def main():
             rate = rospy.Rate(5)
 
             move.xArm7ToStart()
-            move.Gripper("open")
             while not rospy.is_shutdown():
                 if sections:
                     move.xArm7ToBox()
                     if set(book_positions.keys()) == set(sections):
                         print('Found box')
                         for id in sections:
-                            book = book_positions[id]
                             print(f'Going for a book {id}')
 
-                            move.xArm7ToObject(book)
-                            move.lineMotion("down")
-                            move.Gripper("close")
-                            move.lineMotion("up")
+                            move.xArm7ToObject(id)
                             move.xArm7ToStart()
 
-                            move.xArm7ToShelf(shelf_position[id])
-                            # move.lineMotion("forward")
-                            move.Gripper("open")
-                            # move.lineMotion("backward")
-
+                            move.xArm7ToShelf(id)
                             move.xArm7ToStart()
-                            move.Gripper("open")
+
                         outcome = 'Done.'
                     else:
                         print(set(book_positions.keys()))
                         move.xArm7ToStart()
-                        move.Gripper("open")
                         outcome = 'There is no box.'
+                    
                 rate.sleep()
             
         

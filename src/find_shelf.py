@@ -80,10 +80,10 @@ def main():
 
     shelf_positions = list()
     found_marker_ids = list()
-    marker_ids = [1, 7]
-    joint_goal_0 = 0.36
-    turn = 'left'
-    director = 'NONE'
+    marker_ids = [1, 6, 7]
+    joint_goal_0 = 3
+    turn = 'right'
+    director = 'LOOK FOR SHELF'
 
     rospy.init_node('find_shelf', anonymous=True)
     rospy.Subscriber("director", String, DirectorCallback)
@@ -122,9 +122,10 @@ def main():
                     break
                 rate.sleep()
             rospy.loginfo(outcome)
-            while director == "LOOK FOR SHELF":
-                pub.publish(outcome)
+            # while director == "LOOK FOR SHELF":
+            #     pub.publish(outcome)
             move.xArm7ToStart()
+            break
 
     
 
