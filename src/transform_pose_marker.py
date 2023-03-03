@@ -14,9 +14,10 @@ def callback(data):
         for marker in data.markers:
             tf_marker = marker
             marker.pose.header = marker.header
+            # marker.header.stamp = rospy.Time(0)
             pub.publish(marker.pose)
             t = listener.getLatestCommonTime("/link_base", "/camera_link")
-            #t = rospy.Time(0)
+            # t = rospy.Time(0)
             (trans,rot) = listener.lookupTransform('/link_base', '/camera_link', t)
             p_in_base = listener.transformPose("link_base", marker.pose)
             pub1.publish(p_in_base)

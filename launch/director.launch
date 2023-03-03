@@ -21,9 +21,9 @@
         </include>
         
         <node pkg="tf" type="static_transform_publisher" name="camera_xarm7_link" args="0.1 0 0 1.571 -1.571 1.571 link_eef camera_link 100" />
-        <node name="transform_pose_marker" pkg="library" type="transform_pose_marker.py" output="screen"/> 
-        <!-- <node name="sections_occupied" pkg="library" type="sections_occupied.py" output="screen"/>
-        <node name="main" pkg="library" type="main.py" output="screen"/>
+        <node name="transform_pose_marker" pkg="library" type="transform_pose_marker.py"/> 
+        <!-- <node name="sections_occupied" pkg="library" type="sections_occupied.py" output="screen"/> -->
+        <!-- <node name="main" pkg="library" type="main.py" output="screen"/>
         <node name="find_shelf" pkg="library" type="find_shelf.py" output="screen"/> -->
         <!-- <node name="director" pkg="library" type="director.py" output="screen"/> -->
     </group>

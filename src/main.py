@@ -71,11 +71,12 @@ def getCoordinates(id):
     y = [coeff[0]*x[0]+b, coeff[0]*x[1]+b]
     for i in range(2):
         r = round(sqrt((shelf_position[id].position.x-x[i])**2 + (shelf_position[id].position.y-y[i])**2), 1)
+        print(r)
         if r == 0.2:
             print(x[i], y[i])
             angle1 = atan(coeff[0])
             angle2 = atan2(b, 0) - atan2(y[i], x[i])
-            angle3 = abs(angle2) - abs(angle1) if coeff[0]<0 else abs(angle1) - abs(angle2)
+            angle3 = angle1 + angle2 #if coeff[0]<0 else abs(angle1) - abs(angle2)
             print(angle1, angle2, angle3)
             return [x[i], y[i], angle3]
 
@@ -90,18 +91,22 @@ class PNPbook(object):
     def xArm7ToObject(self, id):
         global book_positions
 
+        gripper_values = self.gripper.get_current_joint_values()
+        gripper_values[0] = 0
+        self.gripper.go(gripper_values, wait=True)
+
         current_pose = self.xarm7.get_current_pose().pose
         pose_goal = current_pose
-        pose_goal.position.x = book_positions[id].position.x 
+        pose_goal.position.x = book_positions[id].position.x + 0.1
         pose_goal.position.y = book_positions[id].position.y 
-        pose_goal.position.z = book_positions[id].position.z+0.1
+        pose_goal.position.z = book_positions[id].position.z + 0.2
         self.xarm7.set_pose_target(pose_goal)
         plan_success, traj, planning_time, error_code = self.xarm7.plan()
         self.xarm7.execute(traj, wait=True)
         self.xarm7.clear_pose_targets()
 
         current_pose = self.xarm7.get_current_pose().pose
-        current_pose.position.z -= 0.1
+        current_pose.position.z -= 0.11
         waypoints = list()
         waypoints.append(current_pose)
         (traj, fraction) = self.xarm7.compute_cartesian_path(waypoints, 0.01, 0.0)
@@ -109,7 +114,7 @@ class PNPbook(object):
         self.xarm7.clear_pose_targets()
 
         gripper_values = self.gripper.get_current_joint_values()
-        gripper_values[0] = 0.33
+        gripper_values[0] = 0.45
         self.gripper.go(gripper_values, wait=True)
 
         current_pose = self.xarm7.get_current_pose().pose
@@ -195,19 +200,6 @@ class PNPbook(object):
         joint_goal[4] = 0
         joint_goal[5] = 1.5
         joint_goal[6] = 0
-
-        self.xarm7.go(joint_goal, wait=True)
-
-    def xArm7ToBox(self):
-        joint_goal = self.xarm7.get_current_joint_values()
-        joint_goal[0] = -3.05
-        joint_goal[1] = -0.83
-        joint_goal[2] = 0
-        joint_goal[3] = 1
-        joint_goal[4] = 0
-        joint_goal[5] = 1.5
-        joint_goal[6] = 0
-
         self.xarm7.go(joint_goal, wait=True)
 
 
@@ -218,7 +210,7 @@ def main():
     shelf_position = dict()
     sections = list()
     sections_in = list()
-    director = "NONE"
+    director = 'MAIN PROGRAM'#"NONE"
 
     rospy.init_node('main', anonymous=True)
 
@@ -228,36 +220,40 @@ def main():
     pub = rospy.Publisher('main', String, queue_size=1)
     
 
-    while not rospy.is_shutdown():
-        pub.publish("WAITING")
-        if director == 'MAIN PROGRAM':
+    # while not rospy.is_shutdown():
+    pub.publish("WAITING")
+    if director == 'MAIN PROGRAM':
 
-            GetShelfPosition()
-            move = PNPbook()
-            rate = rospy.Rate(5)
+        GetShelfPosition()
+        move = PNPbook()
+        rate = rospy.Rate(5)
 
-            move.xArm7ToStart()
-            while not rospy.is_shutdown():
-                if sections:
-                    move.xArm7ToBox()
-                    if set(book_positions.keys()) == set(sections):
-                        print('Found box')
-                        for id in sections:
-                            print(f'Going for a book {id}')
+        move.xArm7ToStart()
+        rospy.loginfo('Going to start position')
+        while not rospy.is_shutdown():
+            rospy.loginfo_once('Waitiong for sections to be published')
+            if sections:
+                rospy.loginfo_once('Sections are published')
+                if set(book_positions.keys()) == set(sections):
+                    rospy.loginfo('Found box')
+                    for id in sections:
+                        rospy.loginfo(f'Going for a book {id}')
 
-                            move.xArm7ToObject(id)
-                            move.xArm7ToStart()
-
-                            move.xArm7ToShelf(id)
-                            move.xArm7ToStart()
-
-                        outcome = 'Done.'
-                    else:
-                        print(set(book_positions.keys()))
+                        move.xArm7ToObject(id)
                         move.xArm7ToStart()
-                        outcome = 'There is no box.'
+
+                        move.xArm7ToShelf(id)
+                        move.xArm7ToStart()
+                        if rospy.is_shutdown(): break
+
+                    rospy.loginfo('Done.')
+                else:
+                    print(set(book_positions.keys()))
+                    move.xArm7ToStart()
+                    rospy.loginfo('There is no box.')
                     
                 rate.sleep()
+    rospy.spin()
             
         
 

@@ -65,7 +65,7 @@ class FindShelf(object):
     def xArm7ToStart(self):
         xarm7 = self.xarm7
         joint_goal = xarm7.get_current_joint_values()
-        joint_goal[0] = 0.36
+        joint_goal[0] = 0
         joint_goal[1] = -0.68
         joint_goal[2] = 0
         joint_goal[3] = 0.83
@@ -81,8 +81,8 @@ def main():
     shelf_positions = list()
     found_marker_ids = list()
     marker_ids = [1, 6, 7]
-    joint_goal_0 = 3
-    turn = 'right'
+    joint_goal_0 = 0
+    turn = 'CLOCKWISE'
     director = 'LOOK FOR SHELF'
 
     rospy.init_node('find_shelf', anonymous=True)
@@ -104,15 +104,12 @@ def main():
                 if len(shelf_positions)<len(marker_ids):
                     if time.time()-start_time < 120:
                         move.lookForShelf(joint_goal_0)
-                        rospy.loginfo("Mooving to 'look for book' position.")
-                        if turn == 'left':
-                            joint_goal_0 += 0.1
-                            if joint_goal_0 > 3:
-                                turn = 'right'
+                        rospy.loginfo("Looking for the shelf.")
+                        if joint_goal_0 == 0:
+                            joint_goal_0 = -3 if turn == 'CLOCKWISE' else 3
                         else:
-                            joint_goal_0 -= 0.1
-                            if joint_goal_0 < -3:
-                                turn = 'left'
+                            turn = 'CLOCKWISE' if joint_goal_0 > 0 else 'COUNTERCLOCKWISE'
+                            joint_goal_0 = 0
                     else:
                         outcome = "No shelf was found."
                         break
