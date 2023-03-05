@@ -62,7 +62,7 @@ def getCoordinates(id):
     # finding the equation of the line on whish xArm7 will stop before putting the book
     dist = 0.2/sin(pi/2 - abs(atan(coeff[0])))
     print("Dist, angle:", dist, atan(coeff[0]))
-    b = coeff[1]-dist if shelf_position[id].position.y>0 else coeff[1]+dist
+    b = coeff[1]-dist if coeff[1]>0 else coeff[1]+dist
     print("b:", b)
     dist_2 = sqrt(abs(shelf_position[id].position.x**2+(shelf_position[id].position.y-b)**2-0.04))
     a = coeff[0]**2+1
@@ -216,7 +216,7 @@ def main():
 
     rospy.Subscriber("director", String, DirectorCallback)
     rospy.Subscriber("/arm/ar_tf_marker", AlvarMarkers, BookPositionCallback)
-    rospy.Subscriber("sections", Int16MultiArray, SectionsCallback)
+    rospy.Subscriber("/arm/sections", Int16MultiArray, SectionsCallback)
     pub = rospy.Publisher('main', String, queue_size=1)
     
 
@@ -239,14 +239,15 @@ def main():
                     for id in sections:
                         rospy.loginfo(f'Going for a book {id}')
 
-                        move.xArm7ToObject(id)
-                        move.xArm7ToStart()
+                        # move.xArm7ToObject(id)
+                        # move.xArm7ToStart()
 
                         move.xArm7ToShelf(id)
-                        move.xArm7ToStart()
+                        # move.xArm7ToStart()
                         if rospy.is_shutdown(): break
 
                     rospy.loginfo('Done.')
+                    break
                 else:
                     print(set(book_positions.keys()))
                     move.xArm7ToStart()
