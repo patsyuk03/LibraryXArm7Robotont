@@ -102,7 +102,7 @@ class PNPbook(object):
         self.xarm7.clear_pose_targets()
 
         current_pose = self.xarm7.get_current_pose().pose
-        current_pose.position.z -= 0.1
+        current_pose.position.z -= 0.09
         waypoints = list()
         waypoints.append(current_pose)
         (traj, fraction) = self.xarm7.compute_cartesian_path(waypoints, 0.01, 0.0)
@@ -234,7 +234,7 @@ def mainProgramme(req):
 def main():
     rospy.init_node('main', anonymous=True)
     rospy.Subscriber("/arm/ar_tf_marker", AlvarMarkers, BookPositionCallback)
-    rospy.Subscriber("/arm/sections", Int16MultiArray, SectionsCallback) 
+    rospy.Subscriber("chatter", Int16MultiArray, SectionsCallback) 
     s = rospy.Service('main', Main, mainProgramme)
     rospy.loginfo('Waiting for request.')
     rospy.spin()  

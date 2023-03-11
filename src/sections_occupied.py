@@ -14,7 +14,7 @@ def main():
     pub = rospy.Publisher('sections', Int16MultiArray, queue_size=1)
     rate = rospy.Rate(10)
     sections = Int16MultiArray()
-    sections.data = [7, 1]
+    sections.data = [6, 1]
     while not rospy.is_shutdown():
         pub.publish(sections)
         rate.sleep()

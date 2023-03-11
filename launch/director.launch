@@ -11,8 +11,8 @@
         <arg name="robot_ip" value="192.168.1.196"/>  
     </include>
     
-    <group ns="arm">
-        <include file="$(find realsense2_camera)/launch/rs_rgbd.launch" />
+    <!-- <group ns="arm"> -->
+        <!-- <include file="$(find realsense2_camera)/launch/rs_rgbd.launch" />
         
         <include file="$(find ar_track_alvar)/launch/pr2_indiv_no_kinect.launch">
             <arg name="cam_info_topic" value="/arm/camera/color/camera_info" />
@@ -21,11 +21,11 @@
         </include>
         
         <node pkg="tf" type="static_transform_publisher" name="camera_xarm7_link" args="0.1 0 0 1.571 -1.571 1.571 link_eef camera_link 100" />
-        <node name="transform_pose_marker" pkg="library" type="transform_pose_marker.py"/> 
-        <node name="sections_occupied" pkg="library" type="sections_occupied.py" output="screen"/>
+        <node name="transform_pose_marker" pkg="library" type="transform_pose_marker.py"/>  -->
+        <!-- <node name="sections_occupied" pkg="library" type="sections_occupied.py" output="screen"/> -->
         <!-- <node name="main" pkg="library" type="main.py" output="screen"/>
         <node name="find_shelf" pkg="library" type="find_shelf.py" output="screen"/> -->
         <!-- <node name="director" pkg="library" type="director.py" output="screen"/> -->
-    </group>
+    <!-- </group> -->
   
 </launch>
