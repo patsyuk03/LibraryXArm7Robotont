@@ -1,0 +1,9 @@
+<launch>
+    <arg name="__ns" default="arm_1"/>
+    <include file="$(find realsense2_camera)/launch/rs_rgbd.launch" />
+    <include file="$(find ar_track_alvar)/launch/pr2_indiv_no_kinect.launch">
+        <arg name="cam_info_topic" value="/$(arg __ns)/camera/color/camera_info" />
+        <arg name="cam_image_topic" value="/$(arg __ns)/camera/color/image_raw" />
+        <arg name="output_frame" value="camera_link" />
+    </include>
+</launch>

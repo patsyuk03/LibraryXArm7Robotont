@@ -8,16 +8,18 @@
 
 import rospy
 from std_msgs.msg import Int16MultiArray
+from library.srv import Robotont, RobotontRequest
 
 def main():
     rospy.init_node('sections_occupied', anonymous=True)
-    pub = rospy.Publisher('sections', Int16MultiArray, queue_size=1)
-    rate = rospy.Rate(10)
-    sections = Int16MultiArray()
-    sections.data = [6, 1]
-    while not rospy.is_shutdown():
-        pub.publish(sections)
-        rate.sleep()
+    try:
+        serv = rospy.ServiceProxy('robotont', Robotont)
+        rospy.loginfo('SECTIONS: Waiting responce.')
+        res = serv(RobotontRequest(req=[6, 1]))
+        if res.success:
+            rospy.loginfo("SECTIONS: finished successfully.")
+    except rospy.ServiceException as e:
+        print("SECTIONS: Service call failed: %s"%e)
 
 if __name__ == '__main__':
     try:

@@ -6,17 +6,19 @@
 
 
 
-import rospy, sys, moveit_commander, yaml, tf, geometry_msgs.msg
+import rospy, sys, moveit_commander, yaml, tf, geometry_msgs.msg, os
 from ar_track_alvar_msgs.msg import AlvarMarkers
 from std_msgs.msg import Int16MultiArray
 from math import *
 import numpy as np
-from library.srv import Main, MainResponse
+from std_srvs.srv import Trigger, TriggerResponse
+from library.srv import Robotont, RobotontResponse
 
 book_positions = dict()
 shelf_position = dict()
 sections = list()
 sections_in = list()
+robotont = False
 
 def BookPositionCallback(data):
     global book_positions, sections
@@ -25,16 +27,12 @@ def BookPositionCallback(data):
         if marker.id not in list(book_positions.keys()) and marker.id in sections:
             book_positions[marker.id] = marker.pose.pose
 
-def SectionsCallback(data):
-    global sections_in, sections
-
-    if sections_in != data.data:
-        sections = data.data
-        sections_in = sections
-
 def GetShelfPosition():
     global shelf_position
-    with open('src/library/yaml/shelf_position.yaml') as file:
+    dir = os.path.dirname(__file__)
+    rel_path = "./../yaml/shelf_position.yaml"
+    abs_file_path = os.path.join(dir, rel_path)
+    with open(abs_file_path) as file:
         data = yaml.load(file, Loader=yaml.FullLoader)
         for i in range(len(data)):
             id = list(data[i].keys())[0]
@@ -56,12 +54,12 @@ def getCoordinates(id):
 
     # finding equation of the line on which shelf is located
     coeff = np.polyfit(markers_x, markers_y, 1)
-    print("Coeffs:", coeff)
+    # print("Coeffs:", coeff)
     # finding the equation of the line on whish xArm7 will stop before putting the book
     dist = 0.2/sin(pi/2 - abs(atan(coeff[0])))
-    print("Dist, angle:", dist, atan(coeff[0]))
+    # print("Dist, angle:", dist, atan(coeff[0]))
     b = coeff[1]-dist if coeff[1]>0 else coeff[1]+dist
-    print("b:", b)
+    # print("b:", b)
     dist_2 = sqrt(abs(shelf_position[id].position.x**2+(shelf_position[id].position.y-b)**2-0.04))
     a = coeff[0]**2+1
     c = -dist_2**2
@@ -71,11 +69,11 @@ def getCoordinates(id):
     for i in range(2):
         r.append(sqrt((shelf_position[id].position.x-x[i])**2 + (shelf_position[id].position.y-y[i])**2))
     i = 0 if abs(r[0]-0.2)<abs(r[1]-0.2) else 1
-    print(x[i], y[i])
+    # print(x[i], y[i])
     angle1 = atan(coeff[0])
     angle2 = atan2(b, 0) - atan2(y[i], x[i])
     angle3 = angle1 + angle2 #if coeff[0]<0 else abs(angle1) - abs(angle2)
-    print(angle1, angle2, angle3)
+    # print(angle1, angle2, angle3)
     return [x[i], y[i], angle3]
 
 class PNPbook(object):
@@ -110,7 +108,7 @@ class PNPbook(object):
         self.xarm7.clear_pose_targets()
 
         gripper_values = self.gripper.get_current_joint_values()
-        gripper_values[0] = 0.45
+        gripper_values[0] = 0.6
         self.gripper.go(gripper_values, wait=True)
 
         current_pose = self.xarm7.get_current_pose().pose
@@ -123,13 +121,16 @@ class PNPbook(object):
 
     def xArm7ToShelf(self, id):
         joint_goal = self.xarm7.get_current_joint_values()
-        joint_goal[0] = atan2(shelf_position[id].position.y, shelf_position[id].position.x)
+        joint_goal[0] = 0
         joint_goal[1] = 0
         joint_goal[2] = 0
         joint_goal[3] = 0
         joint_goal[4] = 0
         joint_goal[5] = -1.571
         joint_goal[6] = 0
+        self.xarm7.go(joint_goal, wait=True)
+
+        joint_goal[0] = atan2(shelf_position[id].position.y, shelf_position[id].position.x)
         self.xarm7.go(joint_goal, wait=True)
 
         current_pose = self.xarm7.get_current_pose().pose
@@ -185,6 +186,16 @@ class PNPbook(object):
         self.xarm7.execute(traj, wait=True)
         self.xarm7.clear_pose_targets()
 
+        joint_goal = self.xarm7.get_current_joint_values()
+        joint_goal[0] = atan2(shelf_position[id].position.y, shelf_position[id].position.x)
+        joint_goal[1] = 0
+        joint_goal[2] = 0
+        joint_goal[3] = 0
+        joint_goal[4] = 0
+        joint_goal[5] = -1.571
+        joint_goal[6] = 0
+        self.xarm7.go(joint_goal, wait=True)
+
     def xArm7ToStart(self):
         joint_goal = self.xarm7.get_current_joint_values()
         joint_goal[0] = 0
@@ -197,46 +208,52 @@ class PNPbook(object):
         self.xarm7.go(joint_goal, wait=True)
 
 def mainProgramme(req):
-    rospy.loginfo('Got request:%s', req)
+    global sections
+    sections = req.req
+    print(sections)
+    while not rospy.is_shutdown():
+        if set(book_positions.keys()) == set(sections):
+            rospy.loginfo('MAIN: Found box.')
+            for id in sections:
+                rospy.loginfo(f'MAIN: Going for a book {id}.')
+                coords = getCoordinates(id)
+
+                move.xArm7ToObject(id)
+                move.xArm7ToStart()
+
+                move.xArm7ToShelf(id)
+                move.xArm7ToStart()
+                if rospy.is_shutdown(): break
+            rospy.loginfo('MAIN: Done.')
+            break
+        else:
+            print(set(book_positions.keys()))
+            move.xArm7ToStart()
+            rospy.loginfo('MAIN: There is no box.')
+
+    return RobotontResponse(success=True)
+
+def mainProgrammeStart(req):
+    global move, robotont
+    rospy.loginfo('MAIN: Got request.')
     GetShelfPosition()
     move = PNPbook()
-    rate = rospy.Rate(5)
     move.xArm7ToStart()
-    rospy.loginfo('Going to start position.')
-    while not rospy.is_shutdown():
-        rospy.loginfo_once('Waitiong for sections to be published.')
-        if sections:
-            rospy.loginfo_once('Sections are published.')
-            if set(book_positions.keys()) == set(sections):
-                rospy.loginfo('Found box')
-                for id in sections:
-                    rospy.loginfo(f'Going for a book {id}')
-                    coords = getCoordinates(id)
-
-                    move.xArm7ToObject(id)
-                    move.xArm7ToStart()
-
-                    move.xArm7ToShelf(id)
-                    move.xArm7ToStart()
-                    if rospy.is_shutdown(): break
-
-                rospy.loginfo('Done.')
-                break
-            else:
-                print(set(book_positions.keys()))
-                move.xArm7ToStart()
-                rospy.loginfo('There is no box.')
-                
-            rate.sleep()
-    return MainResponse('Finished')
+    rospy.loginfo('MAIN: Going to start position.')
+    robotont = True
+    return TriggerResponse(success=True)
 
 
 def main():
     rospy.init_node('main', anonymous=True)
-    rospy.Subscriber("/arm/ar_tf_marker", AlvarMarkers, BookPositionCallback)
-    rospy.Subscriber("chatter", Int16MultiArray, SectionsCallback) 
-    s = rospy.Service('main', Main, mainProgramme)
-    rospy.loginfo('Waiting for request.')
+    rospy.Subscriber("arm_1/ar_tf_marker", AlvarMarkers, BookPositionCallback)
+    s = rospy.Service('main', Trigger, mainProgrammeStart)
+    rospy.loginfo('MAIN: Waiting for request.')
+    while not rospy.is_shutdown():
+        if robotont:
+            robotont_serv = rospy.Service('robotont', Robotont, mainProgramme)
+            rospy.loginfo('MAIN: Waiting for robotont to come.')
+            break
     rospy.spin()  
 
 if __name__ == '__main__':

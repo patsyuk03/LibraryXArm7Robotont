@@ -1,0 +1,6 @@
+<launch>
+    <node name="main" pkg="library" type="main.py" output="screen"/>
+    <!-- <node name="test_xarm" pkg="library" type="test_xarm.py" output="screen"/> -->
+    <node name="find_shelf" pkg="library" type="find_shelf.py" output="screen"/>
+    <node name="director" pkg="library" type="director.py" output="screen"/>
+</launch>

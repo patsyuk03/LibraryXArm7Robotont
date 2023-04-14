@@ -1,31 +1,18 @@
 <launch>
-  
-    <arg name="__ns" default=""/>
-    <arg name="eval_underscore_bypass" value="$(arg __ns)"/>
-    <arg if="$(eval eval_underscore_bypass == '')" name="prefix" default=''/> 
-    <arg unless="$(eval eval_underscore_bypass == '')" name="prefix" default="$(arg __ns)/"/>
+    <arg name="__ns" default="arm_1"/>
+    <arg name="ip" default="192.168.1.196"/>
 
     <!-- <include file="$(find library)/launch/multimaster.launch" /> -->
-
     <include file="$(find xarm7_gripper_moveit_config)/launch/realMove_exec.launch" >
-        <arg name="robot_ip" value="192.168.1.196"/>  
+        <arg name="robot_ip" value="$(arg ip)"/>
+        <!-- <arg name="ext_ns" value="$(arg __ns)"/> -->
     </include>
-    
-    <!-- <group ns="arm"> -->
-        <!-- <include file="$(find realsense2_camera)/launch/rs_rgbd.launch" />
-        
-        <include file="$(find ar_track_alvar)/launch/pr2_indiv_no_kinect.launch">
-            <arg name="cam_info_topic" value="/arm/camera/color/camera_info" />
-            <arg name="cam_image_topic" value="/arm/camera/color/image_raw" />
-            <arg name="output_frame" value="camera_link" />
+    <group ns="$(arg __ns)">
+        <include file="$(find library)/launch/vision.launch" >
+            <arg name="__ns" value="$(arg __ns)"/>
         </include>
-        
-        <node pkg="tf" type="static_transform_publisher" name="camera_xarm7_link" args="0.1 0 0 1.571 -1.571 1.571 link_eef camera_link 100" />
-        <node name="transform_pose_marker" pkg="library" type="transform_pose_marker.py"/>  -->
+        <include file="$(find library)/launch/transform.launch" />
+        <!-- <include file="$(find library)/launch/programs.launch" /> -->
         <!-- <node name="sections_occupied" pkg="library" type="sections_occupied.py" output="screen"/> -->
-        <!-- <node name="main" pkg="library" type="main.py" output="screen"/>
-        <node name="find_shelf" pkg="library" type="find_shelf.py" output="screen"/> -->
-        <!-- <node name="director" pkg="library" type="director.py" output="screen"/> -->
-    <!-- </group> -->
-  
+    </group>
 </launch>

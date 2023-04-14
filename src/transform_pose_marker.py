@@ -14,11 +14,11 @@ def callback(data):
         for marker in data.markers:
             tf_marker = marker
             marker.pose.header = marker.header
-            # marker.header.stamp = rospy.Time(0)
+            marker.header.stamp = rospy.Time(0)
             pub.publish(marker.pose)
-            t = listener.getLatestCommonTime("/link_base", "/camera_link")
+            # t = listener.getLatestCommonTime("/link_base", "/camera_link")
             # t = rospy.Time(0)
-            (trans,rot) = listener.lookupTransform('/link_base', '/camera_link', t)
+            # (trans,rot) = listener.lookupTransform('/link_base', '/camera_link', listener.getLatestCommonTime("/link_base", "/camera_link"))
             p_in_base = listener.transformPose("link_base", marker.pose)
             pub1.publish(p_in_base)
             tf_marker.pose = p_in_base
@@ -36,7 +36,7 @@ def main():
     pub1 = rospy.Publisher('pose_link_base', PoseStamped, queue_size=1)
     pub_markers = rospy.Publisher('ar_tf_marker', AlvarMarkers, queue_size=1)
     rospy.loginfo("Subscribing to ar_pose_marker")
-    rospy.Subscriber("/arm/ar_pose_marker", AlvarMarkers, callback)
+    rospy.Subscriber("ar_pose_marker", AlvarMarkers, callback)
     rospy.spin()
                     
 if __name__ == '__main__':

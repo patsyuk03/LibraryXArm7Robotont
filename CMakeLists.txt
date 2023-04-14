@@ -60,7 +60,7 @@ find_package(catkin REQUIRED COMPONENTS
 add_service_files(DIRECTORY srv
   FILES
   FindShelf.srv
-  Main.srv
+  Robotont.srv
 )
 
 ## Generate actions in the 'action' folder
@@ -136,6 +136,7 @@ catkin_install_python(PROGRAMS
   src/trash/pnp_book_v2.py
   src/trash/test_marker.py
   src/trash/test_xarm.py
+  src/trash/test_xarm_2.py
 
   src/main.py
   src/find_shelf.py
