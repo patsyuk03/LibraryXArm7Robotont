@@ -143,6 +143,7 @@ catkin_install_python(PROGRAMS
   src/director.py
   src/transform_pose_marker.py
   src/sections_occupied.py
+  src/pass_book.py
 
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
