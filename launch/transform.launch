@@ -1,4 +1,7 @@
 <launch>
-    <node pkg="tf" type="static_transform_publisher" name="camera_xarm7_link" args="0.1 0 0 1.571 -1.571 1.571 link_eef camera_link 100" />
-    <node name="transform_pose_marker" pkg="library" type="transform_pose_marker.py"/>
+    <arg name="parent_link" default="link_eef"/>
+    <arg name="__ns" default="arm_1"/>
+
+    <node pkg="tf" type="static_transform_publisher" name="camera_xarm7_link" args="0.1 0 0 1.571 -1.571 1.571 $(arg parent_link) $(arg __ns)/camera_link 100" />
+    <node name="transform_pose_marker" pkg="library" type="transform_pose_marker.py" output="screen"/>
 </launch>

@@ -1,17 +1,46 @@
 <launch>
-    <arg name="__ns" default="arm_1"/>
-    <arg name="ip" default="192.168.1.196"/>
+    <arg name="__ns_1" default="arm_1"/>
+    <arg name="__ns_2" default="arm_2"/>
+    <arg name="ip_1" default="192.168.1.196"/>
+    <arg name="ip_2" default="192.168.1.220"/>
+    <arg name="dual_arm" default="false"/>
+    <param name="dual_arm" type="bool" value="$(arg dual_arm)" />
 
     <!-- <include file="$(find library)/launch/multimaster.launch" /> -->
-    <include file="$(find xarm7_gripper_moveit_config)/launch/realMove_exec.launch" >
-        <arg name="robot_ip" value="$(arg ip)"/>
-        <!-- <arg name="ext_ns" value="$(arg __ns)"/> -->
+    <include if="$(arg dual_arm)" file="$(find dual_xarm7_moveit_config)/launch/realMove_exec.launch" >
+        <arg name="robot_ip_1" value="$(arg ip_1)"/>
+        <arg name="robot_ip_2" value="$(arg ip_2)"/>
     </include>
-    <group ns="$(arg __ns)">
+
+    <include unless="$(arg dual_arm)" file="$(find xarm7_gripper_moveit_config)/launch/realMove_exec.launch" >
+        <arg name="robot_ip" value="$(arg ip_1)"/>
+    </include>
+
+    <group ns="$(arg __ns_1)">
+        <param if="$(arg dual_arm)" name="link_name" type="string" value="L_link_base" />
+        <param unless="$(arg dual_arm)" name="link_name" type="string" value="link_base" />
         <include file="$(find library)/launch/vision.launch" >
-            <arg name="__ns" value="$(arg __ns)"/>
+            <arg name="__ns" value="$(arg __ns_1)"/>
+            <arg name="serial_no" value="819612071527" />
         </include>
-        <include file="$(find library)/launch/transform.launch" />
+        <include file="$(find library)/launch/transform.launch">
+        <arg name="__ns" value="$(arg __ns_1)"/>
+            <arg if="$(arg dual_arm)" name="parent_link" value="L_link_eef"/>
+        </include>
+        <!-- <include file="$(find library)/launch/programs.launch" /> -->
+        <!-- <node name="sections_occupied" pkg="library" type="sections_occupied.py" output="screen"/> -->
+    </group>
+
+    <group if="$(arg dual_arm)" ns="$(arg __ns_2)">
+        <param name="link_name" type="string" value="L_link_base" />
+        <include file="$(find library)/launch/vision.launch" >
+            <arg name="__ns" value="$(arg __ns_2)"/>
+            <arg name="serial_no" value="934222070995" />
+        </include>
+        <include file="$(find library)/launch/transform.launch">
+        <arg name="__ns" value="$(arg __ns_2)"/>
+            <arg name="parent_link" value="R_link_eef"/>
+        </include>
         <!-- <include file="$(find library)/launch/programs.launch" /> -->
         <!-- <node name="sections_occupied" pkg="library" type="sections_occupied.py" output="screen"/> -->
     </group>

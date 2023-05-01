@@ -2,9 +2,7 @@
 
 import rospy
 import tf
-import geometry_msgs.msg
 import ar_track_alvar_msgs.msg
-from tf import TransformListener
 from ar_track_alvar_msgs.msg import AlvarMarkers
 from geometry_msgs.msg import PoseStamped
 
@@ -15,25 +13,21 @@ def callback(data):
             tf_marker = marker
             marker.pose.header = marker.header
             marker.header.stamp = rospy.Time(0)
-            pub.publish(marker.pose)
-            # t = listener.getLatestCommonTime("/link_base", "/camera_link")
-            # t = rospy.Time(0)
-            # (trans,rot) = listener.lookupTransform('/link_base', '/camera_link', listener.getLatestCommonTime("/link_base", "/camera_link"))
-            p_in_base = listener.transformPose("link_base", marker.pose)
-            pub1.publish(p_in_base)
+            p_in_base = listener.transformPose(link_name, marker.pose)
             tf_marker.pose = p_in_base
-            tf_marker.header.frame_id = "link_base"
+            tf_marker.header.frame_id = link_name
             tf_markers.markers.append(tf_marker)
         tf_markers.header = data.header
-        tf_markers.header.frame_id = "link_base"
+        tf_markers.header.frame_id = link_name
         pub_markers.publish(tf_markers)
 
 def main():
-    global listener, pub, pub1, pub_markers
+    global listener, pub_markers, link_name
     rospy.init_node('transform_pose_marker', anonymous=True)
+    link_name = rospy.get_param('link_name')
+    # print(link_name)
+    # rospy.loginfo("LINK NAME AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA: %s", link_name)
     listener = tf.TransformListener()
-    pub = rospy.Publisher('pose_usb_cam', PoseStamped, queue_size=1)
-    pub1 = rospy.Publisher('pose_link_base', PoseStamped, queue_size=1)
     pub_markers = rospy.Publisher('ar_tf_marker', AlvarMarkers, queue_size=1)
     rospy.loginfo("Subscribing to ar_pose_marker")
     rospy.Subscriber("ar_pose_marker", AlvarMarkers, callback)

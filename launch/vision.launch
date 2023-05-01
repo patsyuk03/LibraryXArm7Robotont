@@ -1,9 +1,14 @@
 <launch>
     <arg name="__ns" default="arm_1"/>
-    <include file="$(find realsense2_camera)/launch/rs_rgbd.launch" />
+    <arg name="serial_no" default="821413024220"/>
+
+    <include file="$(find realsense2_camera)/launch/rs_rgbd.launch">
+        <arg name="tf_prefix" value="$(arg __ns)/camera" />
+        <arg name="serial_no" value="$(arg serial_no)" />
+    </include>
     <include file="$(find ar_track_alvar)/launch/pr2_indiv_no_kinect.launch">
-        <arg name="cam_info_topic" value="/$(arg __ns)/camera/color/camera_info" />
-        <arg name="cam_image_topic" value="/$(arg __ns)/camera/color/image_raw" />
-        <arg name="output_frame" value="camera_link" />
+        <arg name="cam_info_topic" value="camera/color/camera_info" />
+        <arg name="cam_image_topic" value="camera/color/image_raw" />
+        <arg name="output_frame" value="$(arg __ns)/camera_link" />
     </include>
 </launch>

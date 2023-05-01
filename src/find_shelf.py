@@ -14,6 +14,8 @@ from std_srvs.srv import Trigger, TriggerResponse
 shelf_positions = list()
 found_marker_ids = list()
 marker_ids = [1, 6, 7]
+move_group = "xarm7"
+marker_source = "arm_1/ar_tf_marker"
 
 def ShelfPosition(data):
     global shelf_positions
@@ -39,8 +41,7 @@ class FindShelfClass(object):
         moveit_commander.roscpp_initialize(sys.argv)
         self.robot = moveit_commander.RobotCommander()
         self.scene = moveit_commander.PlanningSceneInterface()
-        self.xarm7 = moveit_commander.MoveGroupCommander("xarm7")
-        self.gripper = moveit_commander.MoveGroupCommander("xarm_gripper")
+        self.xarm7 = moveit_commander.MoveGroupCommander(move_group)
         self.writeToYAML()
     
     def findShelf(self):
@@ -109,8 +110,11 @@ def findShelfStart(req):
     return TriggerResponse(success=True)
 
 def main():
+    global move_group
     rospy.init_node('find_shelf', anonymous=True)
-    rospy.Subscriber("arm_1/ar_tf_marker", AlvarMarkers, ShelfPosition)
+    if rospy.get_param('dual_arm'):
+        move_group = "L_xarm7"
+    rospy.Subscriber(marker_source, AlvarMarkers, ShelfPosition)
     s = rospy.Service('find_shelf', Trigger, findShelfStart)
     rospy.loginfo('FIND SHELF: Waiting for request (find shelf).')
     rospy.spin()
