@@ -15,7 +15,7 @@ def main():
     try:
         serv = rospy.ServiceProxy('robotont', Robotont)
         rospy.loginfo('SECTIONS: Waiting responce.')
-        res = serv(RobotontRequest(req=[6, 1]))
+        res = serv(RobotontRequest(req=[6, 7]))
         if res.success:
             rospy.loginfo("SECTIONS: finished successfully.")
     except rospy.ServiceException as e:

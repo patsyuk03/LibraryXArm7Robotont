@@ -3,7 +3,7 @@
     <arg name="__ns_2" default="arm_2"/>
     <arg name="ip_1" default="192.168.1.196"/>
     <arg name="ip_2" default="192.168.1.220"/>
-    <arg name="dual_arm" default="false"/>
+    <arg name="dual_arm" default="true"/>
     <param name="dual_arm" type="bool" value="$(arg dual_arm)" />
 
     <!-- <include file="$(find library)/launch/multimaster.launch" /> -->

@@ -213,9 +213,9 @@ def mainProgramme(req):
     print(sections)
     while not rospy.is_shutdown():
         if set(book_positions.keys()) == set(sections):
-            rospy.loginfo('MAIN: Found box.')
+            rospy.loginfo('SINGLE ARM: Found box.')
             for id in sections:
-                rospy.loginfo(f'MAIN: Going for a book {id}.')
+                rospy.loginfo(f'SINGLE ARM: Going for a book {id}.')
                 coords = getCoordinates(id)
 
                 move.xArm7ToObject(id)
@@ -224,22 +224,22 @@ def mainProgramme(req):
                 move.xArm7ToShelf(id)
                 move.xArm7ToStart()
                 if rospy.is_shutdown(): break
-            rospy.loginfo('MAIN: Done.')
+            rospy.loginfo('SINGLE ARM: Done.')
             break
         else:
             print(set(book_positions.keys()))
             move.xArm7ToStart()
-            rospy.loginfo('MAIN: There is no box.')
+            rospy.loginfo('SINGLE ARM: There is no box.')
 
     return RobotontResponse(success=True)
 
 def mainProgrammeStart(req):
     global move, robotont
-    rospy.loginfo('MAIN: Got request.')
+    rospy.loginfo('SINGLE ARM: Got request.')
     GetShelfPosition()
     move = PNPbook()
     move.xArm7ToStart()
-    rospy.loginfo('MAIN: Going to start position.')
+    rospy.loginfo('SINGLE ARM: Going to start position.')
     robotont = True
     return TriggerResponse(success=True)
 
@@ -248,11 +248,11 @@ def main():
     rospy.init_node('main', anonymous=True)
     rospy.Subscriber("arm_1/ar_tf_marker", AlvarMarkers, BookPositionCallback)
     s = rospy.Service('main', Trigger, mainProgrammeStart)
-    rospy.loginfo('MAIN: Waiting for request.')
+    rospy.loginfo('SINGLE ARM: Waiting for request.')
     while not rospy.is_shutdown():
         if robotont:
             robotont_serv = rospy.Service('robotont', Robotont, mainProgramme)
-            rospy.loginfo('MAIN: Waiting for robotont to come.')
+            rospy.loginfo('SINGLE ARM: Waiting for robotont to come.')
             break
     rospy.spin()  
 

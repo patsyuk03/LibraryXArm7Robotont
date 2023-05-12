@@ -200,7 +200,7 @@ class DualArm(object):
         self.L_xarm7.go(joint_goal, wait=True)
 
         current_pose = self.L_xarm7.get_current_pose().pose
-        current_pose.position.z = shelf_position[id].position.z + 0.1
+        current_pose.position.z = shelf_position[id].position.z + 0.13
         waypoints = list()
         waypoints.append(current_pose)
         (traj, fraction) = self.L_xarm7.compute_cartesian_path(waypoints, 0.01, 0.0)

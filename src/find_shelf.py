@@ -45,6 +45,7 @@ class FindShelfClass(object):
         self.writeToYAML()
     
     def findShelf(self):
+        global found_marker_ids, shelf_positions
         joint_goal_0 = 0
         turn = 'CLOCKWISE'
 
@@ -68,6 +69,8 @@ class FindShelfClass(object):
             else:
                 outcome = "FIND SHELF: Found shelf."
                 self.writeToYAML()
+                shelf_positions = list()
+                found_marker_ids = list()
                 break
             rate.sleep()
         rospy.loginfo(outcome)
