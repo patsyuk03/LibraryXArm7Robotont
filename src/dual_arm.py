@@ -61,7 +61,7 @@ def getCoordinates(id):
     for i in range(2):
         r.append(sqrt((shelf_position[id].position.x-x[i])**2 + (shelf_position[id].position.y-y[i])**2))
     i = 0 if abs(r[0]-0.2)<abs(r[1]-0.2) else 1
-    print(x[i], y[i])
+    # print(x[i], y[i])
     angle1 = atan(coeff[0])
     angle2 = atan2(b, 0) - atan2(y[i], x[i])
     angle3 = angle1 + angle2 #if coeff[0]<0 else abs(angle1) - abs(angle2)
@@ -103,7 +103,7 @@ class DualArm(object):
         self.R_xarm7.clear_pose_targets()
 
         gripper_values = self.R_gripper.get_current_joint_values()
-        gripper_values[0] = 0.6
+        gripper_values[0] = 0.6 if id==6 else 0.8
         self.R_gripper.go(gripper_values, wait=True)
 
         current_pose = self.R_xarm7.get_current_pose().pose
@@ -114,7 +114,7 @@ class DualArm(object):
         self.R_xarm7.execute(traj, wait=True)
         self.R_xarm7.clear_pose_targets()
 
-    def PassTheBook(self):
+    def PassTheBook(self, id):
         joint_goal = self.R_xarm7.get_current_joint_values()
         joint_goal[0] = -1.0472
         joint_goal[1] = 0
@@ -172,7 +172,7 @@ class DualArm(object):
         self.L_xarm7.clear_pose_targets()
 
         L_gripper_values = self.L_gripper.get_current_joint_values()
-        L_gripper_values[0] = 0.6
+        L_gripper_values[0] = 0.6 if id==6 else 0.8
         self.L_gripper.go(L_gripper_values, wait=True)
 
         R_gripper_values = self.R_gripper.get_current_joint_values()
@@ -200,7 +200,7 @@ class DualArm(object):
         self.L_xarm7.go(joint_goal, wait=True)
 
         current_pose = self.L_xarm7.get_current_pose().pose
-        current_pose.position.z = shelf_position[id].position.z + 0.13
+        current_pose.position.z = shelf_position[id].position.z + 0.1
         waypoints = list()
         waypoints.append(current_pose)
         (traj, fraction) = self.L_xarm7.compute_cartesian_path(waypoints, 0.01, 0.0)
@@ -296,7 +296,7 @@ def mainProgramme(req):
                 coords = getCoordinates(id)
 
                 move.xArm7ToBox(id)
-                move.PassTheBook()
+                move.PassTheBook(id)
                 move.xArm7ToStart("R")
 
                 move.xArm7ToShelf(id)
@@ -305,7 +305,6 @@ def mainProgramme(req):
             rospy.loginfo('DUAL ARM: Done.')
             break
         else:
-            print(set(book_positions.keys()))
             move.xArm7ToStart("LR")
             rospy.loginfo('DUAL ARM: There is no box.')
 
