@@ -1,6 +1,10 @@
+#####################################################
+
+# Central node that coordinates what procram to run #
+
+#####################################################
+
 import rospy
-import sys
-from std_msgs.msg import String
 from std_srvs.srv import Trigger, TriggerRequest
 
 def main():

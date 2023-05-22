@@ -1,14 +1,11 @@
-######################################
+#########################################
 
-# Box with books detected by markers #
+# Main program for the single arm setup #
 
-######################################
-
-
+#########################################
 
 import rospy, sys, moveit_commander, yaml, tf, geometry_msgs.msg, os
 from ar_track_alvar_msgs.msg import AlvarMarkers
-from std_msgs.msg import Int16MultiArray
 from math import *
 import numpy as np
 from std_srvs.srv import Trigger, TriggerResponse
@@ -245,7 +242,7 @@ def mainProgrammeStart(req):
 
 
 def main():
-    rospy.init_node('main', anonymous=True)
+    rospy.init_node('single_arm', anonymous=True)
     rospy.Subscriber("arm_1/ar_tf_marker", AlvarMarkers, BookPositionCallback)
     s = rospy.Service('main', Trigger, mainProgrammeStart)
     rospy.loginfo('SINGLE ARM: Waiting for request.')

@@ -1,7 +1,14 @@
 <launch>
-    <!-- <node name="test_xarm" pkg="kitting_station" type="test_xarm.py" output="screen"/> -->
+    <arg name="dual_arm" default="false"/>
+
     <node name="director" pkg="kitting_station" type="director.py" output="screen"/>
     <node name="find_shelf" pkg="kitting_station" type="find_shelf.py" output="screen"/>
-    <!-- <node name="main" pkg="kitting_station" type="single_arm.py" output="screen"/> -->
-    <node name="pass_book" pkg="kitting_station" type="dual_arm.py" output="screen"/>
+
+    <group if="$(arg dual_arm)">
+        <node name="dual_arm" pkg="kitting_station" type="dual_arm.py" output="screen"/>
+    </group>
+
+    <group unless="$(arg dual_arm)">
+        <node name="single_arm" pkg="kitting_station" type="single_arm.py" output="screen"/>
+    </group>
 </launch>

@@ -65,7 +65,7 @@ catkin_install_python(PROGRAMS
   src/dual_arm.py
   
   src/transform_pose_marker.py
-  src/sections_occupied.py
+  src/fake_request.py
 
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )

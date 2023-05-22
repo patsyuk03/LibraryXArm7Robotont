@@ -1,4 +1,8 @@
-#!/usr/bin/python3
+########################################################################
+
+# Node that transforms marker position with respect to the robot frame #
+
+########################################################################
 
 import rospy
 import tf
@@ -25,8 +29,6 @@ def main():
     global listener, pub_markers, link_name
     rospy.init_node('transform_pose_marker', anonymous=True)
     link_name = rospy.get_param('link_name')
-    # print(link_name)
-    # rospy.loginfo("LINK NAME AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA: %s", link_name)
     listener = tf.TransformListener()
     pub_markers = rospy.Publisher('ar_tf_marker', AlvarMarkers, queue_size=1)
     rospy.loginfo("Subscribing to ar_pose_marker")

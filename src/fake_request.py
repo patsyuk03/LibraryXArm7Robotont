@@ -1,21 +1,18 @@
-#!/usr/bin/python3
+################################################################################
 
-####################################################################
+# Node that sends a fake reqest to the main program to start transpoting books #
 
-# Node that posts the information about occupated cells in the box #
-
-####################################################################
+################################################################################
 
 import rospy
-from std_msgs.msg import Int16MultiArray
 from kitting_station.srv import Robotont, RobotontRequest
 
 def main():
-    rospy.init_node('sections_occupied', anonymous=True)
+    rospy.init_node('fake_request', anonymous=True)
     try:
         serv = rospy.ServiceProxy('robotont', Robotont)
         rospy.loginfo('SECTIONS: Waiting responce.')
-        res = serv(RobotontRequest(req=[6, 7]))
+        res = serv(RobotontRequest(req=[6, 7]))                 # list contains the ids of markers that are attached to the cells which contain the books
         if res.success:
             rospy.loginfo("SECTIONS: finished successfully.")
     except rospy.ServiceException as e:

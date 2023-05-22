@@ -1,9 +1,9 @@
 
-################################
+##########################################
 
-# Looks for the shelf position #
+# Node that looks for the shelf position #
 
-################################
+##########################################
 
 import rospy, sys, moveit_commander
 from ar_track_alvar_msgs.msg import AlvarMarkers
