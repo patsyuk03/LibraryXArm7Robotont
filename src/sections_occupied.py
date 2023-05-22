@@ -8,7 +8,7 @@
 
 import rospy
 from std_msgs.msg import Int16MultiArray
-from library.srv import Robotont, RobotontRequest
+from kitting_station.srv import Robotont, RobotontRequest
 
 def main():
     rospy.init_node('sections_occupied', anonymous=True)

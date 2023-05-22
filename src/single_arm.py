@@ -12,7 +12,7 @@ from std_msgs.msg import Int16MultiArray
 from math import *
 import numpy as np
 from std_srvs.srv import Trigger, TriggerResponse
-from library.srv import Robotont, RobotontResponse
+from kitting_station.srv import Robotont, RobotontResponse
 
 book_positions = dict()
 shelf_position = dict()

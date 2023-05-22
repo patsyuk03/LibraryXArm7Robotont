@@ -1,7 +1,7 @@
 <launch>
-    <!-- <node name="test_xarm" pkg="library" type="test_xarm.py" output="screen"/> -->
-    <node name="director" pkg="library" type="director.py" output="screen"/>
-    <node name="find_shelf" pkg="library" type="find_shelf.py" output="screen"/>
-    <!-- <node name="main" pkg="library" type="single_arm.py" output="screen"/> -->
-    <node name="pass_book" pkg="library" type="dual_arm.py" output="screen"/>
+    <!-- <node name="test_xarm" pkg="kitting_station" type="test_xarm.py" output="screen"/> -->
+    <node name="director" pkg="kitting_station" type="director.py" output="screen"/>
+    <node name="find_shelf" pkg="kitting_station" type="find_shelf.py" output="screen"/>
+    <!-- <node name="main" pkg="kitting_station" type="single_arm.py" output="screen"/> -->
+    <node name="pass_book" pkg="kitting_station" type="dual_arm.py" output="screen"/>
 </launch>

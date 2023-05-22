@@ -6,7 +6,7 @@
     <arg name="dual_arm" default="true"/>
     <param name="dual_arm" type="bool" value="$(arg dual_arm)" />
 
-    <include file="$(find library)/launch/multimaster.launch" />
+    <include file="$(find kitting_station)/launch/multimaster.launch" />
     <include if="$(arg dual_arm)" file="$(find dual_xarm7_moveit_config)/launch/realMove_exec.launch" >
         <arg name="robot_ip_1" value="$(arg ip_1)"/>
         <arg name="robot_ip_2" value="$(arg ip_2)"/>
@@ -19,29 +19,29 @@
     <group ns="$(arg __ns_1)">
         <param if="$(arg dual_arm)" name="link_name" type="string" value="L_link_base" />
         <param unless="$(arg dual_arm)" name="link_name" type="string" value="link_base" />
-        <include file="$(find library)/launch/vision.launch" >
+        <include file="$(find kitting_station)/launch/vision.launch" >
             <arg name="__ns" value="$(arg __ns_1)"/>
             <arg name="serial_no" value="819612071527" />
         </include>
-        <include file="$(find library)/launch/transform.launch">
+        <include file="$(find kitting_station)/launch/transform.launch">
         <arg name="__ns" value="$(arg __ns_1)"/>
             <arg if="$(arg dual_arm)" name="parent_link" value="L_link_eef"/>
         </include>
-        <!-- <include file="$(find library)/launch/programs.launch" /> -->
-        <!-- <node name="sections_occupied" pkg="library" type="sections_occupied.py" output="screen"/> -->
+        <!-- <include file="$(find kitting_station)/launch/programs.launch" /> -->
+        <!-- <node name="sections_occupied" pkg="kitting_station" type="sections_occupied.py" output="screen"/> -->
     </group>
 
     <group if="$(arg dual_arm)" ns="$(arg __ns_2)">
         <param name="link_name" type="string" value="L_link_base" />
-        <include file="$(find library)/launch/vision.launch" >
+        <include file="$(find kitting_station)/launch/vision.launch" >
             <arg name="__ns" value="$(arg __ns_2)"/>
             <arg name="serial_no" value="934222070995" />
         </include>
-        <include file="$(find library)/launch/transform.launch">
+        <include file="$(find kitting_station)/launch/transform.launch">
         <arg name="__ns" value="$(arg __ns_2)"/>
             <arg name="parent_link" value="R_link_eef"/>
         </include>
-        <!-- <include file="$(find library)/launch/programs.launch" /> -->
-        <!-- <node name="sections_occupied" pkg="library" type="sections_occupied.py" output="screen"/> -->
+        <!-- <include file="$(find kitting_station)/launch/programs.launch" /> -->
+        <!-- <node name="sections_occupied" pkg="kitting_station" type="sections_occupied.py" output="screen"/> -->
     </group>
 </launch>

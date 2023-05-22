@@ -3,5 +3,5 @@
     <arg name="__ns" default="arm_1"/>
 
     <node pkg="tf" type="static_transform_publisher" name="camera_xarm7_link" args="0.1 -0.013 0 1.571 -1.571 1.571 $(arg parent_link) $(arg __ns)/camera_link 100" />
-    <node name="transform_pose_marker" pkg="library" type="transform_pose_marker.py" output="screen"/>
+    <node name="transform_pose_marker" pkg="kitting_station" type="transform_pose_marker.py" output="screen"/>
 </launch>
