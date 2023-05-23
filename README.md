@@ -5,7 +5,7 @@
 * [3. Kitting Station Setup](#3-kitting-station-setup)
 * [4. Using kitting_station package](#4-using-kitting_station-package)
 ## 1. Introduction
-Learning factory is a work-based learning approach that provides students with hands-on experience working with industrial robots in a simulated factory environment. This repository is a ROS package which provides a software for the manipulator robot in the kitting station of learning factory. The software is developed for the library use case where a mobile robot carries the books to the manipulator robot which then stores them on the shelf. This package supports two types of setup: 
+Learning Factory is a work-based learning approach that provides students with hands-on experience working with industrial robots in a simulated factory environment. This repository is a ROS package that provides software for the manipulator robot in the kitting station of the learning factory. The software is developed for the library use case where a mobile robot carries the books to the manipulator robot which then stores them on the shelf. This package supports two types of setup:
 1. With one manipulator robot (demo: //link)
 2. With two manipulator robots (demo: //link)
 ## 2. Preparations before using this package
@@ -45,7 +45,7 @@ If setup with two manipulator robots are used set argument 'dual_arm' to 'true' 
 ```bash
 $ roslaunch kitting_station director.launch [dual_arm:=true]
 ```
-It will ask for the input of what you want to run Find Shelf or Main Program. If it is a new setup choose Find Shelf to let robot know the location of the shelf. After the shelf is found you can choose the Main Program which will initialize the moveit commander and wait for the request from mobile robot to start transfering the books.
+It will ask what you want to run Find Shelf or Main Program. If it is a new setup choose Find Shelf to let the robot know the location of the shelf. After the shelf is found you can choose the Main Program which will initialize the moveit commander and wait for the request from the mobile robot to start transferring the books.
 ### 4.3 Fake mobile robot request
 If you want to run a demo without mobile robot fake_request node can be used to initialize the transfer of the books:
 ```bash
